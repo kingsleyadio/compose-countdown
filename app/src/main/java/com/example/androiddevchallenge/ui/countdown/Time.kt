@@ -13,19 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.androiddevchallenge.ui.theme
+package com.example.androiddevchallenge.ui.countdown
 
-import androidx.compose.ui.graphics.Color
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.minutes
+import kotlin.time.seconds
 
-val purple200 = Color(0xFFBB86FC)
-val purple500 = Color(0xFF6200EE)
-val purple700 = Color(0xFF3700B3)
-val teal200 = Color(0xFF03DAC5)
+/**
+ * @author Kingsley Adio
+ * @since 05 Mar, 2021
+ */
+fun Duration.formatAsString(): String {
+    val minutes = toInt(DurationUnit.MINUTES)
+    val seconds = toInt(DurationUnit.SECONDS) % 60
 
-val funnyRed200 = Color(0xFFff817c)
-val funnyRed500 = Color(0xFFD15050)
-val funnyRed700 = Color(0xFF9a1b28)
+    return "%02d:%02d".format(minutes, seconds)
+}
 
-val brownish200 = Color(0xFFa98274)
-val brownish500 = Color(0xFF795548)
-val brownish700 = Color(0xFF4b2c20)
+fun Duration(minute: Int, second: Int): Duration {
+    return minute.minutes + second.seconds
+}
