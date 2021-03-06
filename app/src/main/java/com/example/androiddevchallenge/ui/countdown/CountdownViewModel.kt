@@ -15,23 +15,23 @@
  */
 package com.example.androiddevchallenge.ui.countdown
 
-import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import kotlin.time.Duration
-import kotlin.time.milliseconds
 
 /**
  * @author Kingsley Adio
  * @since 05 Mar, 2021
  */
-class CountdownViewModel : ViewModel() {
+class CountdownViewModel(private val tickerProvider: TickerProvider) : ViewModel() {
 
     val viewState = MutableStateFlow(ViewState())
-    private var countdown: CountDownTimer? = null
+    private var countdown: Job? = null
 
     private val remainingTime
         get() = viewState.value.remainingTime
@@ -45,26 +45,26 @@ class CountdownViewModel : ViewModel() {
             else -> totalTime
         }
 
-        viewState.value = viewState.value.copy(remainingTime = runTime, isRunning = false)
-        viewModelScope.launch {
-            delay(50)
-            startCountdown(runTime)
-        }
+        viewState.value = viewState.value.copy(remainingTime = runTime, isRunning = true)
+        startCountdown(runTime)
     }
 
     private fun startCountdown(runTime: Duration) {
-        countdown = object : CountDownTimer(runTime.toLongMilliseconds(), 1_000) {
-            override fun onTick(millisUntilFinished: Long) {
+        countdown = tickerProvider.createTicker(runTime)
+            .onEach {
                 viewState.value = viewState.value.copy(
-                    remainingTime = millisUntilFinished.milliseconds,
-                    isRunning = true
+                    remainingTime = it
                 )
             }
-
-            override fun onFinish() {
-                viewState.value = viewState.value.copy(remainingTime = Duration.ZERO, isRunning = false)
+            .onCompletion { throwable ->
+                if (throwable == null) { // Completed normally
+                    viewState.value = viewState.value.copy(
+                        remainingTime = Duration.ZERO,
+                        isRunning = false
+                    )
+                }
             }
-        }.start()
+            .launchIn(viewModelScope)
     }
 
     fun updateCountdown(duration: Duration) {

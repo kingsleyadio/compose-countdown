@@ -19,13 +19,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
@@ -83,16 +81,14 @@ fun Countdown(
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        CountdownCard(isRunning, totalTime, remainingTime)
+        CountdownCard(totalTime, remainingTime)
         Spacer(modifier = Modifier.height(32.dp))
 
         AnimatedVisibility(!isRunning) {
             CountdownInput(
                 duration = totalTime,
                 onDurationChange = onDurationChange,
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .wrapContentSize()
+                modifier = Modifier.wrapContentSize()
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -102,17 +98,11 @@ fun Countdown(
 }
 
 @Composable
-fun CountdownCard(isRunning: Boolean, totalTime: Duration, remainingTime: Duration, modifier: Modifier = Modifier) {
+fun CountdownCard(totalTime: Duration, remainingTime: Duration, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier = Modifier.height(300.dp)) {
         val fullSize = (sqrt(maxWidth.value.pow(2) + maxHeight.value.pow(2))).toInt()
         val progress = (totalTime - remainingTime) / totalTime
-        val progressWidth by animateFloatAsState(
-            targetValue = fullSize * progress.toFloat(),
-            animationSpec = when {
-                isRunning -> tween(1_000, easing = LinearEasing)
-                else -> snap()
-            }
-        )
+        val progressWidth by animateFloatAsState(fullSize * progress.toFloat())
 
         Card(
             elevation = 8.dp,
@@ -193,7 +183,7 @@ fun CountdownInput(duration: Duration, onDurationChange: (Duration) -> Unit, mod
         Counter(
             label = "Seconds",
             value = second.toInt(),
-            maxValue = 60,
+            maxValue = 59,
             onValueChanged = { onDurationChange(Duration(minute.toInt(), it)) },
             modifier = Modifier.weight(1f)
         )

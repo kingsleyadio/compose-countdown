@@ -33,21 +33,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androiddevchallenge.ui.countdown.Countdown
 import com.example.androiddevchallenge.ui.countdown.CountdownViewModel
+import com.example.androiddevchallenge.ui.countdown.GoodEnoughTickerProvider
 import com.example.androiddevchallenge.ui.theme.MyTheme
-import dev.chrisbanes.accompanist.insets.ProvideWindowInsets
-import kotlin.time.Duration
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MyTheme {
-                ProvideWindowInsets {
-                    MyApp()
-                }
+                MyApp()
             }
         }
     }
@@ -55,7 +54,14 @@ class MainActivity : AppCompatActivity() {
 
 @Composable
 fun MyApp() {
-    val viewModel = viewModel<CountdownViewModel>()
+    val viewModel = viewModel<CountdownViewModel>(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return CountdownViewModel(GoodEnoughTickerProvider()) as T
+            }
+        }
+    )
     val viewState by viewModel.viewState.collectAsState()
 
     Scaffold(
@@ -85,23 +91,11 @@ fun MyApp() {
     )
 }
 
-@Composable
-fun MyAppPreview() {
-    Countdown(
-        false,
-        totalTime = Duration.ZERO,
-        remainingTime = Duration.ZERO,
-        onStart = { },
-        onDurationChange = { },
-        onStop = { }
-    )
-}
-
 @Preview("Light Theme", widthDp = 360, heightDp = 640)
 @Composable
 fun LightPreview() {
     MyTheme {
-        MyAppPreview()
+        MyApp()
     }
 }
 
@@ -109,6 +103,6 @@ fun LightPreview() {
 @Composable
 fun DarkPreview() {
     MyTheme(darkTheme = true) {
-        MyAppPreview()
+        MyApp()
     }
 }
