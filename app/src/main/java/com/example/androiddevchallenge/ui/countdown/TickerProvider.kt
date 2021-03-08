@@ -21,14 +21,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlin.time.Duration
-import kotlin.time.seconds
+import kotlin.time.milliseconds
 
 /**
  * @author Kingsley Adio
  * @since 06 Mar, 2021
  */
 interface TickerProvider {
-    fun createTicker(duration: Duration, interval: Duration = 1.seconds): Flow<Duration>
+    fun createTicker(duration: Duration, interval: Duration = 50.milliseconds): Flow<Duration>
 }
 
 class GoodEnoughTickerProvider : TickerProvider {
